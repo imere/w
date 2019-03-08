@@ -1,0 +1,27 @@
+<resources>
+    <string name="app_name">W</string>
+    <string name="nav_header_title">W</string>
+    <string name="nav_header_subtitle">NCIAE</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <!-- MainActivity -->
+    <string name="activity_main_locate">Start</string>
+    <string name="activity_main_settings">Settings</string>
+    <!-- SettingsActivity -->
+    <string name="title_activity_settings">Settings</string>
+    <!-- InstructionActivity -->
+    <string name="action_how_to_use">How to use</string>
+    <string name="title_activity_how_to_use">About</string>
+    <string name="activity_how_to_use_instruction">1) 设置地址, 端口(Settings)\n2) 开始定位(Locate)</string>
+    <!-- LoginActivity -->
+    <string name="title_activity_login">Sign in</string>
+    <string name="prompt_user">Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_user">This username is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="permission_rationale">"Contacts permissions are needed for providing email
+        completions."
+    </string>
+</resources>
