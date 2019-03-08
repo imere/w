@@ -106,6 +106,7 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
             switch (status) {
                 case STATUS_CONNECTED:
                     logToView("connected", mac);
+                    logToView("getting information", mac);
                     for (UUID serviceUUID : mUUIDToCharacter.keySet()) {
                         for (BleGattCharacter character : Objects.requireNonNull(mUUIDToCharacter.get(serviceUUID))) {
                             readCharacteristic(mac, serviceUUID, character.getUuid());
@@ -115,6 +116,7 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     break;
                 case STATUS_DISCONNECTED:
                     logToView("disconnected", mac);
+                    logToView("reconnecting", mac);
                     connect(mac);
                     break;
             }
@@ -176,7 +178,7 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
-                mLog.append(String.format("%-30s %s\n", t + ":", c));
+                mLog.append(String.format("%s %s\n\n", t + ":", c));
                 mLog.scrollTo(0, mLog.getLineCount() * mLog.getLineHeight() - mLog.getHeight());
             }
         }, 0);
@@ -193,15 +195,15 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
 
     private void startSearch() {
         SearchRequest request = new SearchRequest.Builder()
-                .searchBluetoothLeDevice(3000, 3)   // 先扫BLE设备3次，每次3s
-                .searchBluetoothClassicDevice(4000) // 再扫经典蓝牙4s
+                .searchBluetoothLeDevice(3000, 2)   // 先扫BLE设备2次，每次3s
+                .searchBluetoothClassicDevice(3000) // 再扫经典蓝牙3s
                 .searchBluetoothLeDevice(3000)      // 再扫BLE设备3s
                 .build();
         mClient.search(request, new SearchResponse() {
             @Override
             public void onSearchStarted() {
                 logToView("search", "start");
-                logToView("search", "等待搜索完成后再点击列表项连接");
+                logToView("hint", "等待搜索完成后再点击列表项连接,失败信息不显示,断开自动重连");
             }
 
             @Override
@@ -232,10 +234,10 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
         mClient.stopSearch();
     }
 
-    private void connect(String mac) {
+    private void connect(final String mac) {
         if (!mClient.isBluetoothOpened()) return;
         BleConnectOptions options = new BleConnectOptions.Builder()
-                .setConnectRetry(2)   // 连接如果失败重试2次
+                .setConnectRetry(1)   // 连接如果失败重试1次
                 .setConnectTimeout(20000)   // 连接超时20s
                 .setServiceDiscoverRetry(2)  // 发现服务如果失败重试2次
                 .setServiceDiscoverTimeout(20000)  // 发现服务超时20s
@@ -246,28 +248,28 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
             public void onResponse(int code, BleGattProfile profile) {
                 switch (code) {
                     case REQUEST_SUCCESS:
-                        logToView("connect", "request success");
+                        logToView("connect", mac + " success");
                         break;
                     case REQUEST_READ:
-                        logToView("connect", "request read");
+                        logToView("connect", mac + " read");
                         break;
                     case REQUEST_WRITE:
-                        logToView("connect", "request write");
+                        logToView("connect", mac + " write");
                         break;
                     case REQUEST_TIMEDOUT:
-                        logToView("connect", "request timeout");
+                        logToView("connect", mac + " timeout");
                         break;
                     case REQUEST_DENIED:
-                        logToView("connect", "request denied");
+                        logToView("connect", mac + " denied");
                         break;
                     case REQUEST_EXCEPTION:
-                        logToView("connect", "request exception");
+                        logToView("connect", mac + " exception");
                         break;
                     case REQUEST_FAILED:
-                        logToView("connect", "request failed");
+                        logToView("connect", mac + " failed");
                         break;
                     default:
-                        logToView("connect", "unhandled response");
+                        logToView("connect", mac + " unhandled");
                         break;
                 }
                 parseProfile(profile);
@@ -335,18 +337,18 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     case REQUEST_TIMEDOUT:
                         logToView("read characteristic", cid + " timeout");
                         break;
-                    case REQUEST_DENIED:
-                        logToView("read characteristic", cid + " denied");
-                        break;
-                    case REQUEST_EXCEPTION:
-                        logToView("read characteristic", cid + " exception");
-                        break;
-                    case REQUEST_FAILED:
-                        logToView("read characteristic", cid + " failed");
-                        break;
-                    default:
-                        logToView("read characteristic", cid + " unhandled");
-                        break;
+//                    case REQUEST_DENIED:
+//                        logToView("read characteristic", cid + " denied");
+//                        break;
+//                    case REQUEST_EXCEPTION:
+//                        logToView("read characteristic", cid + " exception");
+//                        break;
+//                    case REQUEST_FAILED:
+//                        logToView("read characteristic", cid + " failed");
+//                        break;
+//                    default:
+//                        logToView("read characteristic", cid + " unhandled");
+//                        break;
                 }
             }
         });
@@ -367,18 +369,18 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     case REQUEST_TIMEDOUT:
                         logToView("write characteristic", cid + " timeout");
                         break;
-                    case REQUEST_DENIED:
-                        logToView("write characteristic", cid + " denied");
-                        break;
-                    case REQUEST_EXCEPTION:
-                        logToView("write characteristic", cid + " exception");
-                        break;
-                    case REQUEST_FAILED:
-                        logToView("write characteristic", cid + " failed");
-                        break;
-                    default:
-                        logToView("write characteristic", cid + " unhandled");
-                        break;
+//                    case REQUEST_DENIED:
+//                        logToView("write characteristic", cid + " denied");
+//                        break;
+//                    case REQUEST_EXCEPTION:
+//                        logToView("write characteristic", cid + " exception");
+//                        break;
+//                    case REQUEST_FAILED:
+//                        logToView("write characteristic", cid + " failed");
+//                        break;
+//                    default:
+//                        logToView("write characteristic", cid + " unhandled");
+//                        break;
                 }
             }
         });
@@ -399,18 +401,18 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     case REQUEST_TIMEDOUT:
                         logToView("read descriptor", did + " timeout");
                         break;
-                    case REQUEST_DENIED:
-                        logToView("read descriptor", did + " denied");
-                        break;
-                    case REQUEST_EXCEPTION:
-                        logToView("read descriptor", did + " exception");
-                        break;
-                    case REQUEST_FAILED:
-                        logToView("read descriptor", did + " failed");
-                        break;
-                    default:
-                        logToView("read descriptor", did + " unhandled");
-                        break;
+//                    case REQUEST_DENIED:
+//                        logToView("read descriptor", did + " denied");
+//                        break;
+//                    case REQUEST_EXCEPTION:
+//                        logToView("read descriptor", did + " exception");
+//                        break;
+//                    case REQUEST_FAILED:
+//                        logToView("read descriptor", did + " failed");
+//                        break;
+//                    default:
+//                        logToView("read descriptor", did + " unhandled");
+//                        break;
                 }
             }
         });
@@ -447,18 +449,18 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     case REQUEST_TIMEDOUT:
                         logToView("notify", cid + " timeout");
                         break;
-                    case REQUEST_DENIED:
-                        logToView("notify", cid + " denied");
-                        break;
-                    case REQUEST_EXCEPTION:
-                        logToView("notify", cid + " exception");
-                        break;
-                    case REQUEST_FAILED:
-                        logToView("notify", cid + " failed");
-                        break;
-                    default:
-                        logToView("notify", cid + " unhandled");
-                        break;
+//                    case REQUEST_DENIED:
+//                        logToView("notify", cid + " denied");
+//                        break;
+//                    case REQUEST_EXCEPTION:
+//                        logToView("notify", cid + " exception");
+//                        break;
+//                    case REQUEST_FAILED:
+//                        logToView("notify", cid + " failed");
+//                        break;
+//                    default:
+//                        logToView("notify", cid + " unhandled");
+//                        break;
                 }
             }
         });
@@ -478,15 +480,18 @@ public class WatchActivity extends AppCompatActivity implements ListAdapter.OnIt
                     case REQUEST_TIMEDOUT:
                         logToView("unNotify", cid + " timeout");
                         break;
-                    case REQUEST_DENIED:
-                        logToView("unNotify", cid + " denied");
-                        break;
-                    case REQUEST_EXCEPTION:
-                        logToView("unNotify", cid + " exception");
-                        break;
-                    case REQUEST_FAILED:
-                        logToView("unNotify", cid + " failed");
-                        break;
+//                    case REQUEST_DENIED:
+//                        logToView("unNotify", cid + " denied");
+//                        break;
+//                    case REQUEST_EXCEPTION:
+//                        logToView("unNotify", cid + " exception");
+//                        break;
+//                    case REQUEST_FAILED:
+//                        logToView("unNotify", cid + " failed");
+//                        break;
+//                    default:
+//                        logToView("unNotify", cid + " unhandled");
+//                        break;
                 }
             }
         });
